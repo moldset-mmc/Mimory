@@ -463,7 +463,7 @@ function fireIn(iso){
   if(h<24)return`${t('fi_in')} ${h}ч. ${m%60}мин.`;
   return`${t('fi_in')} ${Math.floor(h/24)}д.`;
 }
-function isOv(tk){return!tk.done&&tk.dt&&new Date(tk.dt)<now();}
+function isOv(tk){return!tk.done&&tk.dt&&new Date(tk.dt)<new Date(now()-120000);}
 function isTd(tk){if(!tk.dt)return false;const d=new Date(tk.dt),a=tod(),b=new Date(a);b.setDate(b.getDate()+1);return d>=a&&d<b;}
 function isWk(tk){if(!tk.dt)return false;const d=new Date(tk.dt);return d>=tod()&&d<eow()&&!isTd(tk);}
 function repStr(tk){
@@ -608,9 +608,15 @@ function openModal(id){
   const tk=id?tasks.find(t=>t.id===id):null;
   document.getElementById('mtitle').textContent=t(tk?'edit_task':'add_task');
   document.getElementById('fN').value=tk?tk.name:'';
-  const n2=new Date();
-  if(tk?.dt){const d=new Date(tk.dt);document.getElementById('fD').value=d.toISOString().split('T')[0];document.getElementById('fT').value=`${pad(d.getHours())}:${pad(d.getMinutes())}`;}
-  else{document.getElementById('fD').value=n2.toISOString().split('T')[0];document.getElementById('fT').value=`${pad(n2.getHours())}:${pad(n2.getMinutes())}`;}
+  if(tk?.dt){
+    const d=new Date(tk.dt);
+    document.getElementById('fD').value=d.toISOString().split('T')[0];
+    document.getElementById('fT').value=`${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  } else {
+    // Новая задача — поля пустые, без срока
+    document.getElementById('fD').value='';
+    document.getElementById('fT').value='';
+  }
   buildCpick(tk?.col||'c0');
   const hasRep=tk?.rep&&tk.rep!=='none';
   setTog('togRep',hasRep);
