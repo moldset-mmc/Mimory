@@ -802,25 +802,63 @@ function transfer(){if(npTaskId){const tk=tasks.find(t=>t.id===npTaskId);if(tk){
 function hideNpop(){clearInterval(annoyTimer);stopAlarm();document.getElementById('npop').classList.remove('on');npTaskId=null;}
 
 // ════════════════════════════════════════
-// VOICE
+// TOAST
+// ════════════════════════════════════════
+let toastTimer=null;
+function showToast(msg, taskId){
+  let el=document.getElementById('toast');
+  if(!el){
+    el=document.createElement('div');el.id='toast';
+    el.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1a9daa;color:#fff;padding:11px 16px;border-radius:24px;font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.25);z-index:300;display:flex;align-items:center;gap:10px;max-width:340px;width:calc(100% - 32px);transition:opacity .3s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+    document.getElementById('app').appendChild(el);
+  }
+  el.innerHTML=`<span style="flex:1;overflow:hidden;text-overflow:ellipsis">${msg}</span><button onclick="editLast('${taskId}')" style="background:rgba(255,255,255,.25);border:none;color:#fff;padding:4px 10px;border-radius:14px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">${lang==='ru'?'Изменить':'Editare'}</button>`;
+  el.style.opacity='1';el.style.display='flex';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.style.display='none',300);},5000);
+}
+function editLast(id){clearTimeout(toastTimer);document.getElementById('toast').style.display='none';openModal(id);}
+
+// ════════════════════════════════════════
+// VOICE — автосохранение без формы
 // ════════════════════════════════════════
 let recog=null;
 function startVoice(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){alert(t('v_no'));return;}
   if(recog){recog.stop();return;}
-  recog=new SR();recog.lang=lang==='ru'?'ru-RU':'ro-RO';
-  recog.onstart=()=>{document.getElementById('fabMic').classList.add('rec');document.getElementById('vind').classList.add('on');document.getElementById('vtxt').textContent=t('v_go');};
+  recog=new SR();
+  recog.lang=lang==='ru'?'ru-RU':'ro-RO';
+  recog.continuous=false;
+  recog.interimResults=false;
+  recog.onstart=()=>{
+    document.getElementById('fabMic').classList.add('rec');
+    document.getElementById('vind').classList.add('on');
+    document.getElementById('vtxt').textContent=t('v_go');
+  };
   recog.onresult=e=>{
     const raw=e.results[0][0].transcript;
     const p=parseText(raw);
-    openModal();
-    setTimeout(()=>{
-      document.getElementById('fN').value=p.name;
-      if(p.dt){document.getElementById('fD').value=p.dt.toISOString().split('T')[0];document.getElementById('fT').value=`${pad(p.dt.getHours())}:${pad(p.dt.getMinutes())}`;updFire();}
-    },320);
+    if(!p.name)return;
+    // СРАЗУ сохраняем без формы
+    const id=uid();
+    tasks.push({
+      id, name:p.name,
+      dt:p.dt?p.dt.toISOString():null,
+      col:'c0', rep:'none', rn:1, ru:'d',
+      voice:cfg.voice, done:false,
+      ca:new Date().toISOString()
+    });
+    persist(); render();
+    // Показываем тост с кнопкой "Изменить"
+    const timeStr=p.dt?` · ${pad(p.dt.getHours())}:${pad(p.dt.getMinutes())}` :'';
+    showToast(`✅ ${p.name}${timeStr}`, id);
   };
-  recog.onerror=recog.onend=()=>{document.getElementById('fabMic').classList.remove('rec');document.getElementById('vind').classList.remove('on');recog=null;};
+  recog.onerror=recog.onend=()=>{
+    document.getElementById('fabMic').classList.remove('rec');
+    document.getElementById('vind').classList.remove('on');
+    recog=null;
+  };
   recog.start();
 }
 
