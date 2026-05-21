@@ -1,0 +1,20 @@
+{
+  "name": "Mimory — Планировщик задач",
+  "short_name": "Mimory",
+  "description": "Умный планировщик задач с напоминаниями",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#1a9daa",
+  "theme_color": "#1a9daa",
+  "lang": "ru",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Новая задача", "short_name": "Добавить", "url": "./?new=1", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] }
+  ]
+}
