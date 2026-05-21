@@ -65,12 +65,12 @@ html,body{height:100%;background:var(--bg);color:var(--tx);overflow:hidden;font-
 .chk svg{opacity:0;transition:opacity .15s}
 .tc.done .chk svg{opacity:1}
 .tb{flex:1;min-width:0}
-.tt{font-size:14.5px;font-weight:400;color:var(--tx);line-height:1.3;margin-bottom:3px}
+.tt{font-size:16px;font-weight:400;color:var(--tx);line-height:1.35;margin-bottom:4px}
 .tc.ov .tt{color:var(--R);font-weight:500}
 .tm{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.td2{font-size:11.5px;color:var(--tx2)}
+.td2{font-size:13px;color:var(--tx2)}
 .td2.ov{color:var(--R);font-weight:600}
-.trp{font-size:11px;color:var(--tx3)}
+.trp{font-size:12px;color:var(--tx3)}
 
 /* ── EMPTY ── */
 .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 20px;gap:12px;text-align:center}
@@ -79,13 +79,13 @@ html,body{height:100%;background:var(--bg);color:var(--tx);overflow:hidden;font-
 
 /* ── FAB ── */
 .fabs{position:fixed;bottom:20px;right:15px;z-index:50;display:flex;flex-direction:column-reverse;gap:10px;align-items:flex-end}
-.fab-mic{width:58px;height:58px;border-radius:50%;background:var(--T);color:#fff;border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(26,157,170,.5);gap:1px;transition:transform .2s}
+.fab-mic{width:70px;height:70px;border-radius:50%;background:var(--T);color:#fff;border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(26,157,170,.55);gap:2px;transition:transform .2s}
 .fab-mic:active{transform:scale(.9)}
-.fm-ico{font-size:22px;line-height:1}
-.fm-lbl{font-size:8px;font-weight:700;letter-spacing:.5px;opacity:.85}
+.fm-ico{font-size:28px;line-height:1}
+.fm-lbl{font-size:10px;font-weight:700;letter-spacing:.5px;opacity:.9}
 .fab-mic.rec{animation:pls 1s infinite}
-@keyframes pls{0%,100%{box-shadow:0 4px 16px rgba(26,157,170,.5)}50%{box-shadow:0 4px 28px rgba(26,157,170,.9);transform:scale(1.06)}}
-.fab-add{width:44px;height:44px;border-radius:50%;background:var(--T);color:#fff;border:none;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 3px 10px rgba(26,157,170,.42)}
+@keyframes pls{0%,100%{box-shadow:0 4px 20px rgba(26,157,170,.55)}50%{box-shadow:0 6px 32px rgba(26,157,170,.95);transform:scale(1.08)}}
+.fab-add{width:50px;height:50px;border-radius:50%;background:var(--T);color:#fff;border:none;font-size:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 3px 12px rgba(26,157,170,.45)}
 
 /* ── NAV ── */
 .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--T);display:flex;padding:5px 0 max(8px,env(safe-area-inset-bottom));z-index:40}
@@ -613,9 +613,9 @@ function openModal(id){
     document.getElementById('fD').value=d.toISOString().split('T')[0];
     document.getElementById('fT').value=`${pad(d.getHours())}:${pad(d.getMinutes())}`;
   } else {
-    // Новая задача — поля пустые, без срока
-    document.getElementById('fD').value='';
-    document.getElementById('fT').value='';
+    const def=new Date(); def.setHours(def.getHours()+1, 0, 0, 0);
+    document.getElementById('fD').value=def.toISOString().split('T')[0];
+    document.getElementById('fT').value=`${pad(def.getHours())}:${pad(def.getMinutes())}`;
   }
   buildCpick(tk?.col||'c0');
   const hasRep=tk?.rep&&tk.rep!=='none';
