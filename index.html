@@ -689,6 +689,59 @@ function nextOcc(tk){
 }
 
 // ════════════════════════════════════════
+// ЗВУК БУДИЛЬНИКА (Web Audio API)
+// ════════════════════════════════════════
+let audioCtx=null;
+let alarmNodes=[];
+
+function getAudioCtx(){
+  if(!audioCtx||audioCtx.state==='closed')audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==='suspended')audioCtx.resume();
+  return audioCtx;
+}
+
+// Мелодия будильника: три нарастающих сигнала
+function playAlarm(){
+  try{
+    const ctx=getAudioCtx();
+    stopAlarm();
+    const vol=cfg.volume/100;
+    const melody=[
+      {f:880,t:0,d:.12},{f:880,t:.15,d:.12},{f:880,t:.30,d:.12},
+      {f:1047,t:.50,d:.15},{f:880,t:.68,d:.12},{f:1047,t:.85,d:.15},
+      {f:1175,t:1.05,d:.25}
+    ];
+    melody.forEach(({f,t,d})=>{
+      const osc=ctx.createOscillator();
+      const gain=ctx.createGain();
+      osc.connect(gain);gain.connect(ctx.destination);
+      osc.frequency.value=f;
+      osc.type='sine';
+      const st=ctx.currentTime+t;
+      gain.gain.setValueAtTime(0,st);
+      gain.gain.linearRampToValueAtTime(vol,st+0.02);
+      gain.gain.linearRampToValueAtTime(0,st+d);
+      osc.start(st);osc.stop(st+d+0.05);
+      alarmNodes.push(osc);
+    });
+    // Повтор каждые 2.5 секунды если назойливые включены
+    if(cfg.annoy){
+      alarmNodes._timer=setTimeout(()=>playAlarm(),2500);
+    }
+  }catch(e){console.warn('Audio error:',e);}
+}
+
+function stopAlarm(){
+  clearTimeout(alarmNodes._timer);
+  alarmNodes.forEach(n=>{try{n.stop();}catch{}});
+  alarmNodes=[];
+}
+
+// Разблокировка AudioContext по первому касанию
+document.addEventListener('touchstart',()=>{try{getAudioCtx();}catch{}},{once:true,passive:true});
+document.addEventListener('click',()=>{try{getAudioCtx();}catch{}},{once:true});
+
+// ════════════════════════════════════════
 // NOTIFICATIONS
 // ════════════════════════════════════════
 function checkRem(){
@@ -705,15 +758,42 @@ function showNpop(tk){
   document.getElementById('npTime').textContent=tk.dt?`${pad(new Date(tk.dt).getHours())}:${pad(new Date(tk.dt).getMinutes())}`:'' ;
   const np=document.getElementById('npop');
   np.classList.add('on');
-  if(Notification.permission==='granted')new Notification('Mimory',{body:tk.name,icon:'icon-192.png',tag:tk.id});
-  if(cfg.vibro&&navigator.vibrate)navigator.vibrate([300,100,300]);
-  if(cfg.annoy){clearInterval(annoyTimer);let cnt=0;annoyTimer=setInterval(()=>{if(++cnt>5||!np.classList.contains('on')){clearInterval(annoyTimer);return;}np.classList.add('annoy');setTimeout(()=>np.classList.remove('annoy'),400);if(cfg.vibro&&navigator.vibrate)navigator.vibrate([200,100,200]);},60000);}
-  else setTimeout(()=>{np.classList.remove('on');npTaskId=null;},12000);
+
+  // 🔔 ЗВУК
+  playAlarm();
+
+  // 📳 ВИБРАЦИЯ
+  if(cfg.vibro&&navigator.vibrate)navigator.vibrate([400,150,400,150,400]);
+
+  // 🔔 СИСТЕМНОЕ УВЕДОМЛЕНИЕ
+  if(Notification.permission==='granted'){
+    new Notification('Mimory — '+tk.name,{
+      body:'⏰ '+fmtDt(tk.dt),
+      icon:'icon-192.png',
+      tag:tk.id,
+      requireInteraction:cfg.annoy
+    });
+  }
+
+  // Назойливые — повтор каждую минуту
+  if(cfg.annoy){
+    clearInterval(annoyTimer);
+    let cnt=0;
+    annoyTimer=setInterval(()=>{
+      if(++cnt>10||!np.classList.contains('on')){clearInterval(annoyTimer);stopAlarm();return;}
+      np.classList.add('annoy');
+      setTimeout(()=>np.classList.remove('annoy'),400);
+      if(cfg.vibro&&navigator.vibrate)navigator.vibrate([300,100,300]);
+      playAlarm();
+    },60000);
+  } else {
+    setTimeout(()=>{np.classList.remove('on');npTaskId=null;stopAlarm();},15000);
+  }
 }
 function doneNotif(){if(npTaskId)togDone(npTaskId);hideNpop();}
 function snooze(){if(npTaskId){const tk=tasks.find(t=>t.id===npTaskId);if(tk){const d=new Date();d.setMinutes(d.getMinutes()+10);tk.dt=d.toISOString();persist();render();}}hideNpop();}
 function transfer(){if(npTaskId){const tk=tasks.find(t=>t.id===npTaskId);if(tk){const d=new Date();d.setDate(d.getDate()+1);tk.dt=d.toISOString();persist();render();}}hideNpop();}
-function hideNpop(){clearInterval(annoyTimer);document.getElementById('npop').classList.remove('on');npTaskId=null;}
+function hideNpop(){clearInterval(annoyTimer);stopAlarm();document.getElementById('npop').classList.remove('on');npTaskId=null;}
 
 // ════════════════════════════════════════
 // VOICE
