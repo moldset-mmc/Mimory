@@ -285,56 +285,61 @@ html, body {
 /* ════════════════════════════════════════
    FAB BUTTONS
 ════════════════════════════════════════ */
-.fab-container {
-  position: fixed;
-  bottom: 20px;
-  right: 15px;
-  z-index: 50;
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 10px;
-  align-items: flex-end;
-}
 
+/* Mic — bottom right, bigger, red ring */
 .fab-mic {
-  width: 70px;
-  height: 70px;
+  position: fixed;
+  bottom: 22px;
+  right: 16px;
+  z-index: 50;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   background: var(--color-primary);
   color: #fff;
-  border: none;
+  border: 4px solid #e53935;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(26,157,170,.55);
+  box-shadow: 0 4px 20px rgba(229,57,53,.45), 0 2px 12px rgba(26,157,170,.3);
   gap: 2px;
   transition: transform .2s;
 }
 .fab-mic:active { transform: scale(.9); }
-.fab-mic-icon   { font-size: 28px; line-height: 1; }
+.fab-mic-icon   { font-size: 34px; line-height: 1; }
 .fab-mic-label  { font-size: 10px; font-weight: 700; letter-spacing: .5px; opacity: .9; }
-.fab-mic.recording { animation: mic-pulse 1s infinite; }
+.fab-mic.recording {
+  animation: mic-pulse 1s infinite;
+  border-color: #ff5252;
+}
 @keyframes mic-pulse {
-  0%, 100% { box-shadow: 0 4px 20px rgba(26,157,170,.55); }
-  50%       { box-shadow: 0 6px 32px rgba(26,157,170,.95); transform: scale(1.08); }
+  0%, 100% { box-shadow: 0 4px 20px rgba(229,57,53,.5); }
+  50%       { box-shadow: 0 6px 32px rgba(229,57,53,.9); transform: scale(1.08); }
 }
 
+/* Add — bottom left */
 .fab-add {
-  width: 50px;
-  height: 50px;
+  position: fixed;
+  bottom: 30px;
+  left: 16px;
+  z-index: 50;
+  width: 62px;
+  height: 62px;
   border-radius: 50%;
   background: var(--color-primary);
   color: #fff;
   border: none;
-  font-size: 26px;
+  font-size: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 3px 12px rgba(26,157,170,.45);
+  box-shadow: 0 4px 16px rgba(26,157,170,.5);
+  transition: transform .2s;
 }
+.fab-add:active { transform: scale(.92); }
 
 /* ════════════════════════════════════════
    BOTTOM NAV
@@ -868,6 +873,91 @@ html, body {
   cursor: pointer;
   flex-shrink: 0;
 }
+
+/* ════════════════════════════════════════
+   BULK SELECT MODE
+════════════════════════════════════════ */
+.bulk-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  width: 100%;
+  max-width: 480px;
+  background: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px max(16px, env(safe-area-inset-bottom));
+  z-index: 60;
+  transition: transform .3s cubic-bezier(.34,1.2,.64,1);
+  box-shadow: 0 -4px 20px rgba(0,0,0,.15);
+}
+.bulk-bar.visible {
+  transform: translateX(-50%) translateY(0);
+}
+.bulk-bar-info {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+.bulk-bar-actions { display: flex; gap: 10px; }
+.bulk-btn {
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Roboto', sans-serif;
+  transition: opacity .15s;
+}
+.bulk-btn:active { opacity: .75; }
+.bulk-btn-cancel  { background: rgba(255,255,255,.25); color: #fff; }
+.bulk-btn-delete  { background: #e53935; color: #fff; }
+
+/* Select checkbox on card */
+.task-card.selectable { cursor: default; }
+.task-card.selectable:active { background: var(--color-surface); }
+.task-select-box {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2.5px solid var(--color-border);
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s;
+  cursor: pointer;
+  font-size: 12px;
+  color: #fff;
+}
+.task-card.selected .task-select-box {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+/* Select-mode toggle button in header */
+.select-mode-btn {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,.9);
+  cursor: pointer;
+  padding: 5px 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  border-radius: 6px;
+  transition: background .15s;
+  font-family: 'Roboto', sans-serif;
+}
+.select-mode-btn:active { background: rgba(255,255,255,.15); }
+.select-mode-btn.active {
+  background: rgba(255,255,255,.2);
+  color: #fff;
+}
 </style>
 </head>
 <body>
@@ -880,6 +970,7 @@ html, body {
       <div class="header-actions">
         <button class="icon-btn" onclick="toggleSearch()">🔍</button>
         <button class="icon-btn" onclick="shareApp()">⬆️</button>
+        <button class="select-mode-btn" id="selectModeBtn" onclick="toggleSelectMode()">Выбрать</button>
         <button class="lang-btn" id="langBtn" onclick="toggleLang()">RO</button>
       </div>
     </div>
@@ -887,7 +978,7 @@ html, body {
   </div>
 
   <div class="search-bar" id="searchBar">
-    <input class="search-input" id="searchInput" placeholder="Поиск..." oninput="render()">
+    <input class="search-input" id="searchInput" placeholder="Поиск..." data-i18n-ph="search_ph" oninput="render()">
   </div>
 
   <!-- PAGES -->
@@ -929,13 +1020,11 @@ html, body {
   </div>
 
   <!-- FAB BUTTONS -->
-  <div class="fab-container">
-    <button class="fab-mic" id="fabMic" onclick="startVoice()">
-      <span class="fab-mic-icon">🎤</span>
-      <span class="fab-mic-label">Ok..</span>
-    </button>
-    <button class="fab-add" onclick="openModal()">＋</button>
-  </div>
+  <button class="fab-add" onclick="openModal()">＋</button>
+  <button class="fab-mic" id="fabMic" onclick="startVoice()">
+    <span class="fab-mic-icon">🎤</span>
+    <span class="fab-mic-label">Ok..</span>
+  </button>
 
   <!-- VOICE INDICATOR -->
   <div class="voice-indicator" id="voiceIndicator">
@@ -977,7 +1066,7 @@ html, body {
         </div>
 
         <div class="form-field">
-          <input id="fieldName" type="text" placeholder="Название задачи..." autocomplete="off">
+          <input id="fieldName" type="text" placeholder="Название задачи..." data-i18n-ph="task_ph" autocomplete="off">
         </div>
         <div class="form-field form-row">
           <input id="fieldDate" type="date">
@@ -1042,6 +1131,15 @@ html, body {
     <button class="toast-edit-btn" id="toastEditBtn" onclick="editLastTask()"></button>
   </div>
 
+
+  <!-- BULK SELECT BAR -->
+  <div class="bulk-bar" id="bulkBar">
+    <div class="bulk-bar-info" id="bulkInfo"></div>
+    <div class="bulk-bar-actions">
+      <button class="bulk-btn bulk-btn-cancel" id="bulkCancelBtn" onclick="toggleSelectMode()">Отмена</button>
+      <button class="bulk-btn bulk-btn-delete" id="bulkDeleteBtn" onclick="bulkDelete()">🗑 Удалить</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -1079,6 +1177,20 @@ const TRANSLATIONS = {
     a_share:'Поделиться', a_notif:'🔔 Уведомления', a_rate:'★ Оценить',
     a_desc:'Умный планировщик задач\nс голосовым управлением',
     edit:'Изменить',
+    at:'в',
+    min_short:'мин.', h_short:'ч.', d_short:'д.',
+    unit_m:'мин', unit_h:'ч', unit_d:'дн', unit_w:'нед', unit_mo:'мес', unit_y:'лет',
+    rep_wd:'Будни', rep_wk:'Нед.', rep_mo:'Мес.', rep_yr:'Год',
+    search_ph:'Поиск...', task_ph:'Название задачи...',
+    melody_soon:'Выбор мелодии — в следующей версии 🎵',
+    link_copied:'Ссылка скопирована!',
+    notif_granted:'✅ Уведомления включены', notif_denied:'❌ Отклонено',
+    file_error:'Ошибка файла',
+    sel_select:'Выбрать', sel_done:'Готово',
+    sel_none:'Нет выбранных', sel_one:'1 задача выбрана',
+    sel_few:'задачи выбрано', sel_many:'задач выбрано',
+    deleted_toast:'Удалено задач:',
+    cancel_select:'Отмена',
   },
   ro: {
     nav0:'Sarcini', nav1:'Efectuate', nav2:'Setări', nav3:'Despre',
@@ -1108,6 +1220,20 @@ const TRANSLATIONS = {
     a_share:'Distribuie', a_notif:'🔔 Notificări', a_rate:'★ Evaluează',
     a_desc:'Planificator inteligent\ncu comandă vocală',
     edit:'Editare',
+    at:'la',
+    min_short:'min.', h_short:'ore', d_short:'z.',
+    unit_m:'min', unit_h:'ore', unit_d:'zile', unit_w:'săpt', unit_mo:'luni', unit_y:'ani',
+    rep_wd:'Lucr.', rep_wk:'Săpt.', rep_mo:'Lună', rep_yr:'An',
+    search_ph:'Căutare...', task_ph:'Denumirea sarcinii...',
+    melody_soon:'Alegerea melodiei — în versiunea următoare 🎵',
+    link_copied:'Link copiat!',
+    notif_granted:'✅ Notificări activate', notif_denied:'❌ Respins',
+    file_error:'Eroare de fișier',
+    sel_select:'Selectare', sel_done:'Gata',
+    sel_none:'Nimic selectat', sel_one:'1 sarcină selectată',
+    sel_few:'sarcini selectate', sel_many:'sarcini selectate',
+    deleted_toast:'Sarcini șterse:',
+    cancel_select:'Anulare',
   }
 };
 
@@ -1121,6 +1247,15 @@ function applyTranslations() {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     el.textContent = i18n(el.dataset.i18n);
   });
+  // Update placeholders
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    el.placeholder = i18n(el.dataset.i18nPh);
+  });
+  // Update select mode button if visible
+  const selBtn = document.getElementById('selectModeBtn');
+  if (selBtn) selBtn.textContent = selectMode ? i18n('sel_done') : i18n('sel_select');
+  // Update bulk bar
+  updateBulkBar();
   document.getElementById('langBtn').textContent = currentLang === 'ru' ? 'RO' : 'RU';
   buildColorFilters();
   updateFireInfo();
@@ -1200,7 +1335,7 @@ function formatDateTime(isoString) {
   if (!isoString) return i18n('no_dt');
   const date   = new Date(isoString);
   const months = currentLang === 'ru' ? MONTHS_RU : MONTHS_RO;
-  return `${date.getDate()} ${months[date.getMonth()]} в ${padTwo(date.getHours())}:${padTwo(date.getMinutes())}`;
+  return `${date.getDate()} ${months[date.getMonth()]} ${i18n('at')} ${padTwo(date.getHours())}:${padTwo(date.getMinutes())}`;
 }
 
 function formatCountdown(isoString) {
@@ -1208,18 +1343,18 @@ function formatCountdown(isoString) {
   const diff = new Date(isoString) - now();
   if (diff <= 0) return '';
   const totalMinutes = Math.round(diff / 60000);
-  if (totalMinutes < 60) return `${i18n('fi_in')} ${totalMinutes} мин.`;
+  if (totalMinutes < 60) return `${i18n('fi_in')} ${totalMinutes} ${i18n('min_short')}`;
   const hours = Math.floor(totalMinutes / 60);
-  if (hours < 24) return `${i18n('fi_in')} ${hours}ч. ${totalMinutes % 60}мин.`;
-  return `${i18n('fi_in')} ${Math.floor(hours / 24)}д.`;
+  if (hours < 24) return `${i18n('fi_in')} ${hours}${i18n('h_short')} ${totalMinutes % 60}${i18n('min_short')}`;
+  return `${i18n('fi_in')} ${Math.floor(hours / 24)}${i18n('d_short')}`;
 }
 
 function formatRepeat(task) {
   if (!task.rep || task.rep === 'none') return i18n('no_rep');
-  const presets = { wd: 'Будни', wk: 'Нед.', mo: 'Мес.', yr: 'Год' };
+  const presets = { wd: i18n('rep_wd'), wk: i18n('rep_wk'), mo: i18n('rep_mo'), yr: i18n('rep_yr') };
   if (presets[task.rep]) return `↻ ${presets[task.rep]}`;
-  const unitLabels = { m:'мин', h:'ч', d:'дн', w:'нед', mo:'мес', y:'лет' };
-  return `↻ ${i18n('every')} ${task.rn || 1} ${unitLabels[task.ru || 'd'] || 'дн'}`;
+  const unitLabels = { m:i18n('unit_m'), h:i18n('unit_h'), d:i18n('unit_d'), w:i18n('unit_w'), mo:i18n('unit_mo'), y:i18n('unit_y') };
+  return `↻ ${i18n('every')} ${task.rn || 1} ${unitLabels[task.ru || 'd'] || i18n('unit_d')}`;
 }
 
 function isOverdue(task) {
@@ -1395,9 +1530,29 @@ function renderSection(labelKey, taskList) {
 function renderTaskCard(task) {
   const colorHex = getColorHex(task.col);
   const isOv     = isOverdue(task);
+  const isSel    = selectedIds.has(task.id);
+
+  if (selectMode) {
+    return `
+      <div class="task-card ${task.done?'done':''} ${isOv?'overdue':''} selectable ${isSel?'selected':''}"
+           data-id="${task.id}"
+           style="--task-color:${colorHex}"
+           onclick="toggleSelectTask('${task.id}', event)">
+        <div class="task-select-box">${isSel?'✓':''}</div>
+        <div class="task-body">
+          <div class="task-title">${escapeHtml(task.name)}</div>
+          <div class="task-meta">
+            <span class="task-date ${isOv?'overdue':''}">${formatDateTime(task.dt)}</span>
+            <span class="task-repeat">${formatRepeat(task)}</span>
+          </div>
+        </div>
+      </div>`;
+  }
+
   return `
-    <div class="task-card ${task.done ? 'done' : ''} ${isOv ? 'overdue' : ''}"
-         style="--task-color: ${colorHex}"
+    <div class="task-card ${task.done?'done':''} ${isOv?'overdue':''}"
+         data-id="${task.id}"
+         style="--task-color:${colorHex}"
          onclick="openModal('${task.id}')">
       <div class="task-checkbox" onclick="event.stopPropagation(); toggleTaskDone('${task.id}')">
         <svg width="11" height="9" viewBox="0 0 11 9" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round">
@@ -1407,7 +1562,7 @@ function renderTaskCard(task) {
       <div class="task-body">
         <div class="task-title">${escapeHtml(task.name)}</div>
         <div class="task-meta">
-          <span class="task-date ${isOv ? 'overdue' : ''}">${formatDateTime(task.dt)}</span>
+          <span class="task-date ${isOv?'overdue':''}">${formatDateTime(task.dt)}</span>
           <span class="task-repeat">${formatRepeat(task)}</span>
         </div>
       </div>
@@ -1501,7 +1656,7 @@ function openModal(taskId) {
 
   updateFireInfo();
   document.getElementById('overlay').classList.add('active');
-  setTimeout(() => document.getElementById('fieldName').focus(), 320);
+  // Auto-focus removed — prevents keyboard popping up on task open
 }
 
 function closeModal() {
@@ -1582,9 +1737,7 @@ function updateFireInfo() {
 }
 
 function pickMelody() {
-  alert(currentLang === 'ru'
-    ? 'Выбор мелодии — в следующей версии 🎵'
-    : 'Alegerea melodiei — în versiunea următoare 🎵');
+  alert(i18n('melody_soon'));
 }
 
 // ════════════════════════════════════════
@@ -1960,7 +2113,7 @@ function shareApp() {
     navigator.share(shareData);
   } else {
     navigator.clipboard?.writeText(location.href);
-    alert(currentLang === 'ru' ? 'Ссылка скопирована!' : 'Link copiat!');
+    alert(i18n('link_copied'));
   }
 }
 
@@ -2039,9 +2192,7 @@ function requestNotifPermission() {
   if (!('Notification' in window)) return;
   Notification.requestPermission().then(permission => {
     const granted = permission === 'granted';
-    alert(currentLang === 'ru'
-      ? (granted ? '✅ Уведомления включены' : '❌ Отклонено')
-      : (granted ? '✅ Notificări activate'  : '❌ Respins'));
+    alert(granted ? i18n('notif_granted') : i18n('notif_denied'));
   });
 }
 
@@ -2079,7 +2230,7 @@ function importData() {
           alert(i18n('imp_ok'));
         }
       } catch {
-        alert('Ошибка файла');
+        alert(i18n('file_error'));
       }
     };
     reader.readAsText(file);
@@ -2124,6 +2275,64 @@ document.getElementById('fieldName').addEventListener('keydown', event => {
 
 document.getElementById('fieldDate').addEventListener('change', updateFireInfo);
 document.getElementById('fieldTime').addEventListener('change', updateFireInfo);
+
+
+// ════════════════════════════════════════
+// BULK SELECT
+// ════════════════════════════════════════
+let selectMode = false;
+let selectedIds = new Set();
+
+function toggleSelectMode() {
+  selectMode = !selectMode;
+  selectedIds.clear();
+  const btn = document.getElementById('selectModeBtn');
+  const bar = document.getElementById('bulkBar');
+  btn.classList.toggle('active', selectMode);
+  btn.textContent = selectMode ? i18n('sel_done') : i18n('sel_select');
+  bar.classList.toggle('visible', selectMode);
+  updateBulkBar();
+  render();
+}
+
+function toggleSelectTask(taskId, event) {
+  event.stopPropagation();
+  if (selectedIds.has(taskId)) selectedIds.delete(taskId);
+  else selectedIds.add(taskId);
+  updateBulkBar();
+  // Update just this card's visual
+  const card = document.querySelector(`.task-card[data-id="${taskId}"]`);
+  if (card) {
+    card.classList.toggle('selected', selectedIds.has(taskId));
+    const box = card.querySelector('.task-select-box');
+    if (box) box.textContent = selectedIds.has(taskId) ? '✓' : '';
+  }
+}
+
+function updateBulkBar() {
+  const n = selectedIds.size;
+  const infoEl    = document.getElementById('bulkInfo');
+  const deleteBtn = document.getElementById('bulkDeleteBtn');
+  const cancelBtn = document.getElementById('bulkCancelBtn');
+  if (!infoEl) return; // bulk bar not in DOM yet
+
+  infoEl.textContent =
+    n === 0 ? i18n('sel_none') :
+    n === 1 ? i18n('sel_one')  :
+    n < 5   ? `${n} ${i18n('sel_few')}` : `${n} ${i18n('sel_many')}`;
+
+  if (deleteBtn) deleteBtn.style.opacity = n > 0 ? '1' : '.45';
+  if (cancelBtn) cancelBtn.textContent = i18n('cancel_select');
+}
+
+function bulkDelete() {
+  if (selectedIds.size === 0) return;
+  const n = selectedIds.size;
+  tasks = tasks.filter(t => !selectedIds.has(t.id));
+  saveTasks();
+  toggleSelectMode();
+  showToast(`🗑 ${i18n('deleted_toast')} ${n}`, null);
+}
 
 // ════════════════════════════════════════
 // INIT
